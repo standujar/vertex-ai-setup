@@ -121,13 +121,11 @@ terraform output -raw litellm_master_key
 | Setting | Value |
 |---|---|
 | API Key | `<your litellm_master_key>` |
-| Override OpenAI Base URL | `<your litellm_url>/cursor` |
+| Override OpenAI Base URL | `<your litellm_url>/v1` |
 
 2. Click **+ Add Custom Model** and add `claude-sonnet-4-6` (and/or `claude-opus-4-6`, `claude-haiku-4-5`)
 
 3. Select the model in the chat model dropdown
-
-> **Note**: The `/cursor` endpoint is required — it handles Cursor-specific request transformations automatically. [See LiteLLM docs](https://docs.litellm.ai/docs/tutorials/cursor_integration).
 </details>
 
 <details>
