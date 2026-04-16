@@ -121,7 +121,7 @@ Cursor Settings → Models → OpenAI API Key:
 | Setting | Value |
 |---|---|
 | API Key | `<your litellm_master_key>` |
-| Override OpenAI Base URL | `<your litellm_url>/v1` |
+| Override OpenAI Base URL | `<your litellm_url>` |
 | Model | `claude-sonnet-4-6` |
 </details>
 
