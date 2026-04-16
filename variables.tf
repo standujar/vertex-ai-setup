@@ -102,5 +102,8 @@ variable "litellm_models" {
     { name = "claude-sonnet-4-6", model = "vertex_ai/claude-sonnet-4-6" },
     { name = "claude-opus-4-6", model = "vertex_ai/claude-opus-4-6" },
     { name = "claude-haiku-4-5", model = "vertex_ai/claude-haiku-4-5" },
+    { name = "claude-sonnet-4-6-gcp", model = "vertex_ai/claude-sonnet-4-6" },
+    { name = "claude-opus-4-6-gcp", model = "vertex_ai/claude-opus-4-6" },
+    { name = "claude-haiku-4-5-gcp", model = "vertex_ai/claude-haiku-4-5" },
   ]
 }
