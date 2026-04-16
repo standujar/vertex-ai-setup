@@ -1,0 +1,30 @@
+# ── Required ──────────────────────────────────────────────────────────────────
+
+project_id = "my-gcp-project-id"
+
+# ── Vertex AI ─────────────────────────────────────────────────────────────────
+
+vertex_ai_region = "us-east5"
+
+vertex_ai_users = [
+  "user:stan@example.com",
+  "user:hanzla@example.com",
+]
+
+# ── Budget (uncomment to enable) ─────────────────────────────────────────────
+
+# billing_account_id  = "012345-6789AB-CDEF01"
+# budget_amount_usd   = 500
+# budget_alert_emails = ["stan@example.com"]
+
+# ── LiteLLM Proxy (uncomment to enable) ──────────────────────────────────────
+
+# enable_litellm_proxy  = true
+# region                = "us-central1"
+# litellm_max_instances = 2
+
+# Override which models the proxy exposes (defaults include Sonnet, Opus, Haiku):
+# litellm_models = [
+#   { name = "claude-sonnet-4-6", model = "vertex_ai/claude-sonnet-4-6@20250514" },
+#   { name = "claude-opus-4-6",   model = "vertex_ai/claude-opus-4-6@20250514" },
+# ]

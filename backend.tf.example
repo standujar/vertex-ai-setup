@@ -1,0 +1,9 @@
+# Uncomment and configure to store Terraform state in a GCS bucket.
+# Create the bucket first: gsutil mb gs://YOUR_BUCKET_NAME
+
+# terraform {
+#   backend "gcs" {
+#     bucket = "your-terraform-state-bucket"
+#     prefix = "vertex-ai-setup"
+#   }
+# }
