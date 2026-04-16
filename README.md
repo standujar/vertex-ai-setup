@@ -121,8 +121,10 @@ Cursor Settings → Models → OpenAI API Key:
 | Setting | Value |
 |---|---|
 | API Key | `<your litellm_master_key>` |
-| Override OpenAI Base URL | `<your litellm_url>` |
+| Override OpenAI Base URL | `<your litellm_url>/cursor` |
 | Model | `claude-sonnet-4-6` |
+
+> **Note**: The `/cursor` endpoint is required — it handles Cursor-specific request transformations (cache_control, tool format, headers).
 </details>
 
 <details>
