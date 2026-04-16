@@ -28,6 +28,16 @@ output "claude_code_env" {
   EOT
 }
 
+output "github_ci_workload_identity_provider" {
+  description = "Workload Identity Provider for GitHub Actions (use as GCP_WORKLOAD_IDENTITY_PROVIDER secret)"
+  value       = google_iam_workload_identity_pool_provider.github.name
+}
+
+output "github_ci_service_account" {
+  description = "Service account for GitHub Actions (use as GCP_SERVICE_ACCOUNT secret)"
+  value       = google_service_account.github_ci.email
+}
+
 output "next_steps" {
   description = "Manual steps required after terraform apply"
   value       = <<-EOT
