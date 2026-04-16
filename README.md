@@ -1,24 +1,34 @@
-# Vertex AI Setup for Claude Code & Cursor
+<p align="center">
+  <h1 align="center">vertex-ai-setup</h1>
+  <p align="center">
+    Use your GCP credits for Claude. One <code>terraform apply</code>.<br/>
+    Claude Code, Cursor, any OpenAI-compatible tool.
+  </p>
+  <p align="center">
+    <a href="https://github.com/standujar/vertex-ai-setup/actions"><img src="https://github.com/standujar/vertex-ai-setup/actions/workflows/validate.yaml/badge.svg" alt="CI"></a>
+    <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/license-MIT-blue" alt="License"></a>
+    <a href="https://registry.terraform.io"><img src="https://img.shields.io/badge/terraform-%3E%3D1.6-blueviolet" alt="Terraform"></a>
+  </p>
+</p>
 
-Terraform module to set up Google Cloud Vertex AI for using Claude models with your GCP credits. Supports:
+---
 
-- **Claude Code CLI** — direct Vertex AI connection (zero proxy needed)
-- **Cursor IDE** — via optional LiteLLM proxy on Cloud Run
+You have GCP credits. Claude charges per API call. **Why not use the credits you already have?**
 
-## What it does
+**vertex-ai-setup** configures everything in one command: Vertex AI API, IAM, budget alerts, and an optional [LiteLLM](https://github.com/BerriAI/litellm) proxy on Cloud Run for tools that don't speak Vertex AI natively.
 
-- Enables the Vertex AI API on your GCP project
-- Grants `roles/aiplatform.user` to your team members
-- Optionally sets up budget alerts
-- Optionally deploys a [LiteLLM](https://github.com/BerriAI/litellm) proxy on Cloud Run for OpenAI-compatible clients (Cursor, etc.)
+Same models. Same pricing. Paid with GCP credits instead of cash.
 
-## Prerequisites
+## What you get
 
-- [Terraform](https://developer.hashicorp.com/terraform/install) >= 1.6
-- [gcloud CLI](https://cloud.google.com/sdk/docs/install) authenticated
-- A GCP project with billing enabled
+| Tool | How it connects | Proxy needed? |
+|------|----------------|---------------|
+| **Claude Code** | Direct to Vertex AI (3 env vars) | No |
+| **Cursor** | Via LiteLLM proxy on Cloud Run | Yes |
+| **Cline / Continue / Aider** | Via LiteLLM proxy | Yes |
+| **Any OpenAI-compatible tool** | Via LiteLLM proxy | Yes |
 
-## Quick start
+## Getting started
 
 ### 1. Clone and configure
 
@@ -26,87 +36,183 @@ Terraform module to set up Google Cloud Vertex AI for using Claude models with y
 git clone https://github.com/standujar/vertex-ai-setup.git
 cd vertex-ai-setup
 cp terraform.tfvars.example terraform.tfvars
-# Edit terraform.tfvars with your project ID, users, etc.
+```
+
+Edit `terraform.tfvars`:
+
+```hcl
+project_id       = "my-gcp-project"
+vertex_ai_region = "global"
+
+vertex_ai_users = [
+  "user:alice@example.com",
+  "user:bob@example.com",
+]
+
+# Optional: budget alerts
+billing_account_id  = "012345-6789AB-CDEF01"
+budget_amount_usd   = 500
+budget_alert_emails = ["alice@example.com"]
+
+# Optional: LiteLLM proxy for Cursor & others
+enable_litellm_proxy = true
 ```
 
 ### 2. Apply
 
 ```bash
 terraform init
-terraform plan
 terraform apply
 ```
 
 ### 3. Enable Claude models (manual, one-time)
 
-Terraform can't automate this step — it's a console click.
+This is the one step Terraform can't automate — it's a console click.
 
-1. Go to [Vertex AI Model Garden](https://console.cloud.google.com/vertex-ai/model-garden)
-2. Search "Claude"
-3. Enable the Claude models you need
-4. Wait for approval (~24-48h)
+1. Open [Vertex AI Model Garden](https://console.cloud.google.com/vertex-ai/model-garden)
+2. Search **"Claude"**
+3. Enable the models you need (Sonnet 4.6, Opus 4.6, Haiku 4.5)
 
-### 4. Configure your tools
+### 4. Start using Claude
 
-#### Claude Code CLI
+<details open>
+<summary><strong>Claude Code</strong> (direct — no proxy)</summary>
+
+Add to `~/.zshrc`:
 
 ```bash
-# Add to ~/.zshrc or ~/.bashrc
 export CLAUDE_CODE_USE_VERTEX=1
 export CLOUD_ML_REGION=global
-export ANTHROPIC_VERTEX_PROJECT_ID=your-project-id
-
-# Authenticate
-gcloud auth application-default login
-
-# Verify
-claude "hello"
+export ANTHROPIC_VERTEX_PROJECT_ID=my-gcp-project
 ```
 
-Or add to `~/.claude/settings.json`:
+Or `~/.claude/settings.json`:
 
 ```json
 {
   "env": {
     "CLAUDE_CODE_USE_VERTEX": "1",
-    "ANTHROPIC_VERTEX_PROJECT_ID": "your-project-id",
+    "ANTHROPIC_VERTEX_PROJECT_ID": "my-gcp-project",
     "CLOUD_ML_REGION": "global"
   }
 }
 ```
 
-#### Cursor IDE (requires LiteLLM proxy)
-
-Set `enable_litellm_proxy = true` in your `terraform.tfvars`, then re-apply.
+Authenticate and go:
 
 ```bash
-# Get the proxy URL and API key
+gcloud auth application-default login
+claude "hello"
+```
+</details>
+
+<details>
+<summary><strong>Cursor</strong> (via LiteLLM proxy)</summary>
+
+Get your proxy URL and API key:
+
+```bash
 terraform output litellm_url
 terraform output -raw litellm_master_key
 ```
 
-In Cursor Settings > Models, add the LiteLLM URL as a custom OpenAI-compatible endpoint with the master key as API key.
+Cursor Settings → Models → OpenAI API Key:
 
-The proxy is pre-configured with Claude models via a `config.yaml` mounted from Secret Manager. Customize which models are exposed via the `litellm_models` variable.
+| Setting | Value |
+|---|---|
+| API Key | `<your litellm_master_key>` |
+| Override OpenAI Base URL | `<your litellm_url>/v1` |
+| Model | `claude-sonnet-4-6` |
+</details>
+
+<details>
+<summary><strong>Cline</strong> (VS Code)</summary>
+
+Cline settings → Provider: **OpenAI Compatible**:
+
+| Setting | Value |
+|---|---|
+| Base URL | `<your litellm_url>/v1` |
+| API Key | `<your litellm_master_key>` |
+| Model ID | `claude-sonnet-4-6` |
+</details>
+
+<details>
+<summary><strong>Aider</strong></summary>
+
+```bash
+OPENAI_API_KEY=<your litellm_master_key> \
+OPENAI_API_BASE=<your litellm_url>/v1 \
+aider --model claude-sonnet-4-6
+```
+</details>
+
+<details>
+<summary><strong>Any OpenAI-compatible tool</strong></summary>
+
+The LiteLLM proxy exposes a standard OpenAI-compatible API:
+
+```bash
+curl <your litellm_url>/chat/completions \
+  -H "Authorization: Bearer <your litellm_master_key>" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"claude-sonnet-4-6","messages":[{"role":"user","content":"Hello!"}]}'
+```
+</details>
+
+## What it deploys
+
+| Resource | Always | Only with `enable_litellm_proxy = true` |
+|----------|--------|----------------------------------------|
+| Vertex AI API | ✓ | |
+| IAM roles for your team | ✓ | |
+| Budget alerts (email) | ✓ (if configured) | |
+| Service account | | ✓ |
+| Secret Manager (API key + config) | | ✓ |
+| Cloud Run service (LiteLLM) | | ✓ |
+
+The LiteLLM proxy scales to zero when idle — you only pay when it handles requests.
+
+## Models
+
+| Model | ID |
+|-------|----|
+| Claude Sonnet 4.6 | `claude-sonnet-4-6` |
+| Claude Opus 4.6 | `claude-opus-4-6` |
+| Claude Haiku 4.5 | `claude-haiku-4-5` |
+
+Customize via the `litellm_models` variable.
 
 ## Pricing
 
-Vertex AI pricing for Claude is **identical** to direct Anthropic API pricing. The difference: you pay with **GCP credits** instead of cash.
+Vertex AI pricing for Claude is **identical** to direct Anthropic API. The difference: you pay with **GCP credits** instead of cash.
+
+| Model | Input / 1M tokens | Output / 1M tokens |
+|-------|-------------------|---------------------|
+| Opus 4.6 | $15 | $75 |
+| Sonnet 4.6 | $3 | $15 |
+| Haiku 4.5 | $0.80 | $4 |
+
+## Examples
+
+Ready-to-copy configurations in [`examples/`](examples/):
+
+- [`basic/`](examples/basic/) — Vertex AI + IAM only (for Claude Code users)
+- [`with-litellm/`](examples/with-litellm/) — + LiteLLM proxy (for Cursor)
+- [`with-budget/`](examples/with-budget/) — + budget alerts
 
 ## Files
 
 ```
-.
-├── main.tf                    # APIs, IAM, service accounts
-├── budget.tf                  # Budget alerts (optional)
-├── litellm.tf                 # LiteLLM proxy on Cloud Run (optional)
-├── variables.tf               # All configurable inputs
-├── outputs.tf                 # URLs, env vars, next steps
-├── versions.tf                # Provider version constraints
-├── terraform.tfvars.example   # Copy this to terraform.tfvars
-├── backend.tf.example         # Remote state backend template
-├── examples/                  # Copy-pasteable usage examples
-└── .gitignore                 # Keeps secrets and state out of git
+├── main.tf                  # APIs, IAM, service accounts
+├── budget.tf                # Budget alerts (optional)
+├── litellm.tf               # LiteLLM proxy on Cloud Run (optional)
+├── variables.tf             # All inputs with validation
+├── outputs.tf               # URLs, env vars, next steps
+├── versions.tf              # Provider constraints
+├── terraform.tfvars.example # Copy → terraform.tfvars
+├── backend.tf.example       # Remote state template
+└── examples/                # Copy-pasteable configs
 ```
 
 ## Cleanup
@@ -115,8 +221,16 @@ Vertex AI pricing for Claude is **identical** to direct Anthropic API pricing. T
 terraform destroy
 ```
 
-This does NOT disable Claude models in Model Garden (that's a manual step if needed).
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-MIT
+MIT — [LICENSE](LICENSE)
+
+---
+
+<p align="center">
+  If this saves you money, <a href="https://github.com/standujar/vertex-ai-setup">give it a star</a>.
+</p>
