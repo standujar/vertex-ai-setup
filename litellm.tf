@@ -51,9 +51,14 @@ resource "google_secret_manager_secret_version" "litellm_config" {
           model           = m.model
           vertex_project  = var.project_id
           vertex_location = var.vertex_ai_region
+          drop_params     = true
         }
       }
     ]
+    litellm_settings = {
+      drop_params   = true
+      modify_params = true
+    }
   })
 }
 
